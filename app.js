@@ -3,6 +3,9 @@ require('dotenv').config({ path: './config.env' });
 
 const express = require('express');
 
+// Other packages
+const morgan = require(`morgan`);
+
 // DATABASE
 const connectDB = require('./db/server.js');
 
@@ -13,6 +16,10 @@ const notFoundMiddleware = require('./middleware/not-found.js');
 const app = express();
 const port = process.env.PORT || 5000;
 
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('tiny'));
+}
+
 // Body parser middleware (important for POST/PUT requests)
 app.use(express.json());
 
@@ -21,6 +28,7 @@ app.use(express.json());
  * @route   GET /api/v1/
  * @access  Public
  */
+
 app.get('/api/v1/', (req, res) => {
   console.log(req.body);
   res.send('📦 This is the GET route for the e-commerce project');
