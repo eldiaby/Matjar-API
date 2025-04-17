@@ -1,28 +1,33 @@
-const mongoose = require('mongoose');
+const mongoose = require(`mongoose`);
 
-// const URI = process.env.DBCONECTSTRING.replace(
-//   '<db_username>',
-//   process.env.DB_USERNAME
-// )
-//   .replace('<db_password>', process.env.DB_PASSWORD)
-//   .replace('<project_name>', process.env.PROJECT_NAME);
+const uriFromEnv = undefined;
+// process.env.ATLAS_DB_URI?.replace(
+// '<db_username>',
+// process.env.ATLAS_DB_USERNAME
+// );
+// .replace('<db_password>', process.env.ATLAS_DB_PASSWORD)
+// .replace('<project_name>', process.env.ATLAS_DB_PROJECT);
 
-const URI_LOCAL = process.env.DBCONECTSTRING_LOCAL.replace(
+const localUri = process.env.LOCAL_DB_URI?.replace(
   '<project_name>',
-  process.env.PROJECT_NAME
+  process.env.ATLAS_DB_PROJECT
 );
 
-const connectDB = (uri = URI || URI_LOCAL) => {
-  console.log('Establishing a connection to the database...');
+const connectDB = async (uri = uriFromEnv || localUri) => {
+  try {
+    if (!uri) throw new Error('❌ No valid MongoDB URI found.');
 
-  // mongoose.connection.once('open', () => {
-  //   console.log('Database connected successfully!');
-  // });
-
-  // mongoose.connection.on('error', (err) => {
-  //   console.log('Error connecting to the database:', err);
-
-  return mongoose.connect(uri); // });
+    console.log(
+      `Connecting to ${
+        uri.includes('mongodb+srv') ? 'MongoDB Atlas' : 'Local MongoDB'
+      }...`
+    );
+    await mongoose.connect(uri);
+    console.log('Database connection established successfully!');
+  } catch (error) {
+    console.error('Failed to connect to the database:', error.message);
+    throw error;
+  }
 };
 
 module.exports = connectDB;
