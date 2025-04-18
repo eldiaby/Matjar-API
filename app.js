@@ -3,6 +3,9 @@ require('dotenv').config({ path: './config.env' });
 
 const express = require('express');
 
+// Routes
+const authRouter = require(`./routes/authRouter.js`);
+
 // Other packages
 const morgan = require(`morgan`);
 
@@ -28,6 +31,8 @@ app.use(express.json());
  * @route   GET /api/v1/
  * @access  Public
  */
+
+app.use(`/api/v1/auth`, authRouter);
 
 app.get('/api/v1/', (req, res) => {
   console.log(req.body);
