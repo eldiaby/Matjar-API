@@ -5,10 +5,9 @@ const User = require('./../models/userModel.js');
 
 // Other paskeges
 const { StatusCodes } = require(`http-status-codes`);
-const ms = require(`ms`);
 
 // Utilites
-const { generateToken } = require(`./../utils/JWT.js`);
+const { attackCookiesToResponse } = require(`./../utils/JWT.js`);
 const { BadRequestError } = require(`./../errors`);
 
 // Register functionality
@@ -44,18 +43,7 @@ module.exports.register = asyncHandler(async (req, res, next) => {
     role: newUser.role,
   };
 
-  // Generate JWT token
-  const token = generateToken(tokenUser);
-
-  // Set JWT token as a cookie in the response
-  res.cookie('token', token, {
-    httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
-    // secure: process.env.NODE_ENV === 'production', // Send only over HTTPS in production
-    // sameSite: 'strict', // Helps protect against CSRF attacks
-    expires: new Date(
-      Date.now() + ms(process.env.JWT_COOKIE_EXPIRES_IN || `1d`)
-    ), // Cookie expiration: 1 day
-  });
+  attackCookiesToResponse({ res, tokenUser });
 
   // Send success response with user data (without password)
   res.status(StatusCodes.CREATED).json({ user: tokenUser });
