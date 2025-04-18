@@ -5,9 +5,9 @@ const { StatusCodes } = require(`http-status-codes`);
 const { BadRequestError } = require(`./../errors`);
 
 module.exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, passwordConfirm } = req.body;
 
-  if (!name || !email || !password) {
+  if (!name || !email || !password || !passwordConfirm) {
     throw new BadRequestError('All fields are required');
   }
 
@@ -20,7 +20,12 @@ module.exports.register = asyncHandler(async (req, res, next) => {
     throw new BadRequestError('Email already exists');
   }
 
-  const newUser = await User.create({ name, email, password });
+  const newUser = await User.create({
+    name,
+    email,
+    password,
+    passwordConfirm,
+  });
 
   res.status(StatusCodes.CREATED).json({ user: newUser });
 });

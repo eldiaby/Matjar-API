@@ -1,5 +1,6 @@
-const mongoose = require(`mongoose`);
+const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
@@ -36,6 +37,19 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters long.'],
       trim: true,
     },
+    passwordConfirm: {
+      type: String,
+      required: [true, 'Please confirm your password.'],
+      validate: {
+        // Custom validator to check if password and passwordConfirm match
+        validator: function () {
+          return this.password === this.passwordConfirm;
+        },
+        message: 'Password confirmation does not match password.',
+      },
+      trim: true,
+      select: false, // Prevent this field from being returned in any query
+    },
     role: {
       type: String,
       enum: ['admin', 'user'],
@@ -44,5 +58,23 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// 🔐 Encrypt the password before saving the user document
+userSchema.pre('save', async function () {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) return;
+
+  // Remove passwordConfirm before saving to DB
+  this.passwordConfirm = undefined;
+
+  // Generate salt and hash the password
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+// 🔍 Method to compare entered password with the hashed password in DB
+userSchema.method.compareUserPassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 module.exports = mongoose.model('User', userSchema);
