@@ -88,5 +88,10 @@ module.exports.login = asyncHandler(async (req, res, next) => {
 });
 
 module.exports.logout = asyncHandler(async (req, res, next) => {
-  res.send(`<h1>This id logout Route</h1>`);
+  res.cookie(`token`, 'Logout', {
+    httpOnly: true,
+    expires: new Date(Date.now()),
+  });
+
+  res.status(StatusCodes.OK).json({ msg: `User logout succsess` });
 });
