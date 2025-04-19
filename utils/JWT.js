@@ -19,6 +19,7 @@ module.exports.attackCookiesToResponse = ({ res, tokenUser: user }) => {
     httpOnly: true, //Prevent client-side JavaScript from accessing the cookie
     secure: process.env.NODE_ENV === 'production', // Send only over HTTPS in production
     sameSite: 'strict', // Helps protect against CSRF attacks
+    secure: true,
     expires: new Date(
       Date.now() + ms(process.env.JWT_COOKIE_EXPIRES_IN || `1d`)
     ), // Cookie expiration: 1 day

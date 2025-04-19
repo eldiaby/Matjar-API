@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use(express.json()); // Body parser middleware (important for POST/PUT requests)
 
-app.use(cookieParser()); // Cookie parser middleware (to read cookies from requests)
+app.use(cookieParser(process.env.JWT_SECRET_KEY)); // Cookie parser middleware (to read cookies from requests)
 
 /* ─────────────────────────────────────────────────────── */
 /* 📡 Routes */
@@ -53,7 +53,7 @@ app.use('/api/v1/auth', authRouter); // Auth routes
  * @access  Public
  */
 app.get('/api/v1/', (req, res) => {
-  console.log(req.body); // just for testing
+  console.log(req.signedCookies); // just for testing
   res.send('📦 This is the GET route for the e-commerce project');
 });
 
