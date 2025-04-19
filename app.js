@@ -13,6 +13,7 @@ const cookieParser = require('cookie-parser'); // Cookie parser middleware
 /* ─────────────────────────────────────────────────────── */
 const connectDB = require('./db/server.js'); // Database connection
 const authRouter = require('./routes/authRouter.js'); // Auth routes
+const userRouter = require('./routes/userRouter.js'); // User routes
 
 /* ─────────────────────────────────────────────────────── */
 /* 🧱 Custom Middleware */
@@ -46,6 +47,7 @@ app.use(cookieParser(process.env.JWT_SECRET_KEY)); // Cookie parser middleware (
 /* ─────────────────────────────────────────────────────── */
 
 app.use('/api/v1/auth', authRouter); // Auth routes
+app.use('/api/v1/users', userRouter); // user routes
 
 /**
  * @desc    Test route for API root
