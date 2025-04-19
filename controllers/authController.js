@@ -84,7 +84,7 @@ module.exports.login = asyncHandler(async (req, res, next) => {
   attackCookiesToResponse({ res, tokenUser });
 
   // 🟢 Success response
-  res.status(StatusCodes.CREATED).json({ user: tokenUser });
+  res.status(StatusCodes.OK).json({ user: tokenUser });
 });
 
 module.exports.logout = asyncHandler(async (req, res, next) => {
@@ -93,5 +93,5 @@ module.exports.logout = asyncHandler(async (req, res, next) => {
     expires: new Date(Date.now()),
   });
 
-  res.status(StatusCodes.OK).json({ msg: `User logout succsess` });
+  res.status(StatusCodes.OK).json({ msg: `User logged out successfully` });
 });
