@@ -1,11 +1,26 @@
 const asyncHandler = require(`express-async-handler`);
+const User = require(`./../models/userModel.js`);
+const { StatusCodes } = require(`http-status-codes`);
+const { NotFoundError } = require(`./../errors`);
 
 module.exports.getAllUsers = asyncHandler(async (req, res, next) => {
-  res.send(`<h1>Get All Users</h1>`);
+  const users = await User.find({ role: 'user' })
+    .select(`-password -__v`)
+    .lean();
+
+  res.status(StatusCodes.OK).json({ length: users.length, users });
 });
 
 module.exports.getUser = asyncHandler(async (req, res, next) => {
-  res.send(`<h1>Get A Single User</h1>`);
+  const { id } = req.params;
+
+  const user = await User.findById(id).select(`-password -__v`);
+
+  if (!user) {
+    throw new NotFoundError(`There is no user with this id: ${id}`);
+  }
+
+  res.status(StatusCodes.OK).json({ user });
 });
 
 module.exports.showCurrentUser = asyncHandler(async (req, res, next) => {
