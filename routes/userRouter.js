@@ -13,7 +13,7 @@ const router = exprees.Router();
 
 router.route(`/`).get(authenticateUser, userController.getAllUsers);
 
-router.route(`/showMe`).get(userController.showCurrentUser);
+router.route(`/showMe`).get(authenticateUser, userController.showCurrentUser);
 
 router.route(`/updateUser`).patch(userController.updateUser);
 router.route(`/updateUserPassword`).patch(userController.updateUserPassword);

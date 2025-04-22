@@ -24,7 +24,7 @@ module.exports.getUser = asyncHandler(async (req, res, next) => {
 });
 
 module.exports.showCurrentUser = asyncHandler(async (req, res, next) => {
-  res.send(`<h1>Show Current User</h1>`);
+  res.status(StatusCodes.OK).json({ user: req.user });
 });
 
 module.exports.updateUser = asyncHandler(async (req, res, next) => {
