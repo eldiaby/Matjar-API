@@ -16,7 +16,9 @@ router.route(`/`).get(authenticateUser, userController.getAllUsers);
 router.route(`/showMe`).get(authenticateUser, userController.showCurrentUser);
 
 router.route(`/updateUser`).patch(userController.updateUser);
-router.route(`/updateUserPassword`).patch(userController.updateUserPassword);
+router
+  .route(`/updateUserPassword`)
+  .patch(authenticateUser, userController.updateUserPassword);
 
 router
   .route(`/:id`)
