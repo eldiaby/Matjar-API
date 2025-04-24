@@ -33,10 +33,32 @@ module.exports.showCurrentUser = asyncHandler(async (req, res, next) => {
   res.status(StatusCodes.OK).json({ user: req.user });
 });
 
-module.exports.updateUser = asyncHandler(async (req, res, next) => {
-  res.send(`<h1>Update A Single User</h1>`);
+////////////////////////////////////////////////////////////////////////////
+
+exports.updateUser = asyncHandler(async (req, res, next) => {
+  const { name, email } = req.body;
+
+  if (!email || !name) {
+    throw new BadRequestError('Name and email are required.');
+  }
+
+  const user = await User.findOneAndUpdate(
+    { _id: req.user.userId },
+    { email, name },
+    { new: true, runValidators: true }
+  );
+
+  if (!user) {
+    throw new NotFoundError('User not found.');
+  }
+
+  const tokenUser = createTokenUser(user);
+  attackCookiesToResponse({ res, user: tokenUser });
+
+  res.status(StatusCodes.OK).json({ user: tokenUser });
 });
 
+///////////////////////////////////////////////////////////////////////
 module.exports.updateUserPassword = asyncHandler(async (req, res, next) => {
   const { oldPassword, newPassword, newPasswordConfirm } = req.body;
 
