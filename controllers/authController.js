@@ -8,6 +8,7 @@ const { StatusCodes } = require(`http-status-codes`);
 
 // Utilites
 const { attackCookiesToResponse } = require(`./../utils/JWT.js`);
+const { createTokenUser } = require(`./../utils/createTokenUser.js`);
 const { BadRequestError, UnauthenticatedError } = require(`./../errors`);
 
 // Register functionality
@@ -29,7 +30,7 @@ module.exports.register = asyncHandler(async (req, res, next) => {
   }
 
   // Create new user in the database
-  const newUser = await User.create({
+  const user = await User.create({
     name,
     email,
     password,
@@ -37,12 +38,7 @@ module.exports.register = asyncHandler(async (req, res, next) => {
   });
 
   // Prepare token payload (exclude sensitive data like password)
-  const tokenUser = {
-    userId: newUser._id,
-    name: newUser.name,
-    role: newUser.role,
-  };
-
+  const tokenUser = createTokenUser({ user });
   attackCookiesToResponse({ res, tokenUser });
 
   // Send success response with user data (without password)
@@ -74,11 +70,7 @@ module.exports.login = asyncHandler(async (req, res, next) => {
   }
 
   // 🎫 Generate token payload
-  const tokenUser = {
-    userId: user._id,
-    name: user.name,
-    role: user.role,
-  };
+  const tokenUser = createTokenUser({ user });
 
   // 🍪 Attach token as cookie to response
   attackCookiesToResponse({ res, tokenUser });

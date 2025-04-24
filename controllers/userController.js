@@ -7,6 +7,7 @@ const {
   UnauthenticatedError,
 } = require(`./../errors`);
 const { attackCookiesToResponse } = require(`./../utils/JWT.js`);
+const { createTokenUser } = require(`./../utils/createTokenUser.js`);
 
 module.exports.getAllUsers = asyncHandler(async (req, res, next) => {
   const users = await User.find({ role: 'user' })
@@ -65,11 +66,7 @@ module.exports.updateUserPassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   // 🎫 Create new token payload
-  const tokenUser = {
-    userId: user._id,
-    name: user.name,
-    role: user.role,
-  };
+  const tokenUser = createTokenUser({ user });
 
   // 🍪 Send new token cookie
   attackCookiesToResponse({ res, tokenUser });
