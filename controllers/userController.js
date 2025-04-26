@@ -19,6 +19,7 @@ const {
 // Utilities
 const { attachCookiesToResponse } = require('./../utils/JWT.js');
 const { createTokenUser } = require('./../utils/createTokenUser.js');
+const { checkPermisions } = require('./../utils/ckeckPermissions.js');
 
 // ==========================
 // @desc    Get all users (with role "user")
@@ -46,6 +47,8 @@ module.exports.getUser = asyncHandler(async (req, res, next) => {
   if (!user) {
     throw new NotFoundError(`There is no user with this id: ${id}`);
   }
+
+  checkPermisions(req.user, user);
 
   res.status(StatusCodes.OK).json({ user });
 });

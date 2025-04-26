@@ -12,7 +12,7 @@ const generateToken = (payload) => {
 module.exports.isTokenValid = (token) =>
   JWT.verify(token, process.env.JWT_SECRET_KEY);
 
-module.exports.attackCookiesToResponse = ({ res, tokenUser: user }) => {
+module.exports.attachCookiesToResponse = ({ res, tokenUser: user }) => {
   const token = generateToken(user);
 
   res.cookie(`token`, token, {
