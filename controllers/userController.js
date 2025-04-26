@@ -1,26 +1,47 @@
-const asyncHandler = require(`express-async-handler`);
-const User = require(`./../models/userModel.js`);
-const { StatusCodes } = require(`http-status-codes`);
+// ==========================
+// IMPORTS & DEPENDENCIES
+// ==========================
+
+// Packages
+const asyncHandler = require('express-async-handler');
+const { StatusCodes } = require('http-status-codes');
+
+// Models
+const User = require('./../models/userModel.js');
+
+// Custom Errors
 const {
   NotFoundError,
   BadRequestError,
   UnauthenticatedError,
-} = require(`./../errors`);
-const { attackCookiesToResponse } = require(`./../utils/JWT.js`);
-const { createTokenUser } = require(`./../utils/createTokenUser.js`);
+} = require('./../errors');
 
+// Utilities
+const { attachCookiesToResponse } = require('./../utils/JWT.js');
+const { createTokenUser } = require('./../utils/createTokenUser.js');
+
+// ==========================
+// @desc    Get all users (with role "user")
+// @route   GET /api/v1/users
+// @access  Private (admin or similar)
+// ==========================
 module.exports.getAllUsers = asyncHandler(async (req, res, next) => {
   const users = await User.find({ role: 'user' })
-    .select(`-password -__v`)
-    .lean();
+    .select('-password -__v') // exclude sensitive fields
+    .lean(); // return plain JS objects
 
   res.status(StatusCodes.OK).json({ length: users.length, users });
 });
 
+// ==========================
+// @desc    Get single user by ID
+// @route   GET /api/v1/users/:id
+// @access  Private
+// ==========================
 module.exports.getUser = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const user = await User.findById(id).select(`-password -__v`);
+  const user = await User.findById(id).select('-password -__v');
 
   if (!user) {
     throw new NotFoundError(`There is no user with this id: ${id}`);
@@ -29,13 +50,21 @@ module.exports.getUser = asyncHandler(async (req, res, next) => {
   res.status(StatusCodes.OK).json({ user });
 });
 
+// ==========================
+// @desc    Show currently logged in user
+// @route   GET /api/v1/users/showMe
+// @access  Private
+// ==========================
 module.exports.showCurrentUser = asyncHandler(async (req, res, next) => {
   res.status(StatusCodes.OK).json({ user: req.user });
 });
 
-////////////////////////////////////////////////////////////////////////////
-
-exports.updateUser = asyncHandler(async (req, res, next) => {
+// ==========================
+// @desc    Update user email & name
+// @route   PUT /api/v1/users/updateUser
+// @access  Private
+// ==========================
+module.exports.updateUser = asyncHandler(async (req, res, next) => {
   const { name, email } = req.body;
 
   if (!email || !name) {
@@ -53,12 +82,16 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
   }
 
   const tokenUser = createTokenUser(user);
-  attackCookiesToResponse({ res, user: tokenUser });
+  attachCookiesToResponse({ res, user: tokenUser });
 
   res.status(StatusCodes.OK).json({ user: tokenUser });
 });
 
-///////////////////////////////////////////////////////////////////////
+// ==========================
+// @desc    Update user password
+// @route   PUT /api/v1/users/updateUserPassword
+// @access  Private
+// ==========================
 module.exports.updateUserPassword = asyncHandler(async (req, res, next) => {
   const { oldPassword, newPassword, newPasswordConfirm } = req.body;
 
@@ -91,7 +124,7 @@ module.exports.updateUserPassword = asyncHandler(async (req, res, next) => {
   const tokenUser = createTokenUser({ user });
 
   // 🍪 Send new token cookie
-  attackCookiesToResponse({ res, tokenUser });
+  attachCookiesToResponse({ res, tokenUser });
 
   // ✅ Send response
   res
