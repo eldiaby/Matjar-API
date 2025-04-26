@@ -1,6 +1,8 @@
 // ==========================
 // IMPORTS & DEPENDENCIES
 // ==========================
+
+// Node packages
 const path = require('node:path');
 
 // Packages

@@ -1,12 +1,12 @@
 // ==========================
 // IMPORTS & DEPENDENCIES
 // ==========================
-const asyncHandler = require('express-async-handler');
 
 // Models
 const User = require('./../models/userModel.js');
 
 // Packages
+const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 
 // Utilities
