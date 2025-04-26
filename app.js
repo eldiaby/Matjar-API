@@ -12,8 +12,9 @@ const cookieParser = require('cookie-parser'); // Cookie parser middleware
 /* 🛠️  Custom Modules */
 /* ─────────────────────────────────────────────────────── */
 const connectDB = require('./db/server.js'); // Database connection
-const authRouter = require('./routes/authRouter.js'); // Auth routes
-const userRouter = require('./routes/userRouter.js'); // User routes
+const authRouter = require('./routes/authRoutes.js'); // Auth routes
+const userRouter = require('./routes/userRoutes.js'); // User routes
+const productRouter = require('./routes/productRoutes.js'); // Product routes
 
 /* ─────────────────────────────────────────────────────── */
 /* 🧱 Custom Middleware */
@@ -47,7 +48,8 @@ app.use(cookieParser(process.env.JWT_SECRET_KEY)); // Cookie parser middleware (
 /* ─────────────────────────────────────────────────────── */
 
 app.use('/api/v1/auth', authRouter); // Auth routes
-app.use('/api/v1/users', userRouter); // user routes
+app.use('/api/v1/users', userRouter); // User routes
+app.use('/api/v1/products', productRouter); // Product routes
 
 /**
  * @desc    Test route for API root
