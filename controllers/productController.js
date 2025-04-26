@@ -1,6 +1,7 @@
 // ==========================
 // IMPORTS & DEPENDENCIES
 // ==========================
+const path = require('node:path');
 
 // Packages
 const asyncHandler = require('express-async-handler');
@@ -103,6 +104,38 @@ module.exports.deleteProduct = asyncHandler(async (req, res, next) => {
     .json({ msg: 'Product deleted successfully' });
 });
 
+// ==========================
+// @desc    Upload product image
+// @route   POST /api/v1/products/uploadImage
+// @access  Private (admin only)
+// ==========================
 module.exports.uploadImage = asyncHandler(async (req, res, next) => {
-  res.send('<h1>Upload An Image</h1>');
+  // 📥 Ensure file exists
+  const image = req.files?.image;
+  if (!image) {
+    throw new CustomError.BadRequestError('Please upload an image file');
+  }
+
+  // 🧪 Validate file type
+  if (!image.mimetype.startsWith('image/')) {
+    throw new CustomError.BadRequestError('Only image files are allowed');
+  }
+
+  // 📏 Validate file size (max 1MB)
+  const maxSize = 1 * 1024 * 1024;
+  if (image.size > maxSize) {
+    throw new CustomError.BadRequestError('Image must be less than 1MB');
+  }
+
+  // 🛣️ Build image path
+  const imagePath = path.join(__dirname, '..', 'public', 'uploads', image.name);
+
+  // 💾 Move the file to the uploads folder
+  await image.mv(imagePath);
+
+  // ✅ Send response with uploaded image URL
+  res.status(StatusCodes.CREATED).json({
+    msg: 'Image uploaded successfully',
+    image: `/uploads/${image.name}`,
+  });
 });
