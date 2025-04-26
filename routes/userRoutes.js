@@ -1,4 +1,4 @@
-const userController = require(`./../controllers/userController.js`);
+const userController = require(`../controllers/userController.js`);
 
 const exprees = require(`express`);
 const {
@@ -7,7 +7,7 @@ const {
 
 const {
   authorizePermission,
-} = require(`./../middleware/authorizationMiddleware.js`);
+} = require(`../middleware/authorizationMiddleware.js`);
 
 const router = exprees.Router();
 
