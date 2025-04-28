@@ -6,11 +6,21 @@ const { StatusCodes } = require('http-status-codes');
 const { checkPermisions } = require('./../utils/ckeckPermissions.js');
 
 module.exports.getAllReviews = asyncHandler(async (req, res, next) => {
-  res.send('Get All Reviews');
+  const reviews = await Review.find({});
+
+  res.status(StatusCodes.OK).json({ length: reviews.length, reviews });
 });
 
 module.exports.getReview = asyncHandler(async (req, res, next) => {
-  res.send('Get Review');
+  const { id } = req.params;
+
+  const review = await Review.findById(id);
+
+  if (!review) {
+    throw new CustomeError.NotFoundError('There is no review with this ID.');
+  }
+
+  res.status(StatusCodes.OK).json({ review });
 });
 
 module.exports.createReview = asyncHandler(async (req, res, next) => {

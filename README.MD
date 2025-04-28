@@ -233,7 +233,7 @@
 #### Review Structure
 
 - [x] add reviewController file in controllers
-- [] export (createReview, getAllReviews, getSingleReview, updateReview, deleteReview) functions
+- [x] export (createReview, getAllReviews, getSingleReview, updateReview, deleteReview) functions
 - [x] res.send('function name')
 - [x] setup reviewRoutes file in routes
 - [x] import all controllers
@@ -245,14 +245,14 @@
 
 #### Create Review
 
-- [] check for product in the req.body
-- [] attach user property (set it equal to req.user.userId) on to req.body
-- [] create review
-- [] don't test yet
+- [x] check for product in the req.body
+- [x] attach user property (set it equal to req.user.userId) on to req.body
+- [x] create review
+- [x] don't test yet
 
 #### Get All Reviews and Get Single Review
 
-- [] both public routes, typical setup
+- [x] both public routes, typical setup
 
 #### Delete Review
 
