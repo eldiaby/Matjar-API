@@ -3,7 +3,7 @@ const CustomeError = require('./../errors');
 const Review = require('./../models/reviewModel.js');
 const Product = require('./../models/productModel.js');
 const { StatusCodes } = require('http-status-codes');
-const { checkPermisions } = require('./../utils/ckeckPermissions.js');
+const { checkPermissions } = require('./../utils/ckeckPermissions.js');
 
 module.exports.getAllReviews = asyncHandler(async (req, res, next) => {
   const reviews = await Review.find({});
@@ -30,7 +30,7 @@ module.exports.createReview = asyncHandler(async (req, res, next) => {
   // Check if product exists
   const productExists = await Product.findOne({ _id: productId });
   if (!productExists) {
-    throw new CustomError.NotFoundError(
+    throw new CustomeError.NotFoundError(
       'No product found with the provided ID.'
     );
   }
@@ -41,7 +41,7 @@ module.exports.createReview = asyncHandler(async (req, res, next) => {
     user: userId,
   });
   if (alreadyReviewed) {
-    throw new CustomError.BadRequestError(
+    throw new CustomeError.BadRequestError(
       'You have already submitted a review for this product. Please update your existing review.'
     );
   }
@@ -57,5 +57,20 @@ module.exports.updateReview = asyncHandler(async (req, res, next) => {
 });
 
 module.exports.deleteReview = asyncHandler(async (req, res, next) => {
-  res.send('delete Review');
+  const { id } = req.params;
+
+  const review = await Review.findById(id);
+  if (!review) {
+    throw new CustomeError.NotFoundError(
+      'No review found with the provided ID.'
+    );
+  }
+
+  checkPermissions(req.user, review.user);
+
+  await Review.findByIdAndDelete(id);
+
+  res
+    .status(StatusCodes.NO_CONTENT)
+    .json({ msg: 'Review deleted successfully.' });
 });
