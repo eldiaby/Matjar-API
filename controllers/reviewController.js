@@ -18,7 +18,9 @@ const CustomError = require('./../errors');
 // ==========================
 module.exports.getAllReviews = asyncHandler(async (req, res, next) => {
   // Fetch all reviews from the database with .lean() for better performance
-  const reviews = await Review.find({}).lean();
+  const reviews = await Review.find({})
+    .populate({ path: 'product', select: 'name price' })
+    .lean();
 
   // Return the reviews with the total count
   res.status(StatusCodes.OK).json({ length: reviews.length, reviews });
