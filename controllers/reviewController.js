@@ -53,7 +53,23 @@ module.exports.createReview = asyncHandler(async (req, res, next) => {
 });
 
 module.exports.updateReview = asyncHandler(async (req, res, next) => {
-  res.send('update Review');
+  const { id } = req.params;
+
+  const review = await Review.findById(id);
+  if (!review) {
+    throw new CustomError.NotFoundError(
+      'No review found with the provided ID.'
+    );
+  }
+
+  checkPermissions(req.user, review.user);
+
+  const updatedReview = await Review.findByIdAndUpdate(id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(StatusCodes.OK).json({ review: updatedReview });
 });
 
 module.exports.deleteReview = asyncHandler(async (req, res, next) => {
