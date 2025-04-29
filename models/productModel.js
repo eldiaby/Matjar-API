@@ -55,9 +55,13 @@ const productSchema = new mongoose.Schema(
     },
     averageRating: {
       type: Number,
-      default: 0.0,
+      default: 0,
       min: [0, 'Average rating cannot be less than 0'],
       max: [5, 'Average rating cannot exceed 5'],
+    },
+    numberOfReviews: {
+      type: Number,
+      default: 0,
     },
     user: {
       type: mongoose.Types.ObjectId,

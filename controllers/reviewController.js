@@ -11,6 +11,9 @@ const Product = require('./../models/productModel.js');
 // Custom Errors
 const CustomError = require('./../errors');
 
+// Utilites
+const { checkPermissions } = require('./../utils/ckeckPermissions.js');
+
 // ==========================
 // @desc    Get all reviews
 // @route   GET /api/v1/reviews
