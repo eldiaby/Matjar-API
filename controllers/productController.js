@@ -37,7 +37,7 @@ module.exports.getProduct = asyncHandler(async (req, res, next) => {
     throw new CustomError.BadRequestError('Product ID is required');
   }
 
-  const product = await Product.findById(id).lean();
+  const product = await Product.findById(id).populate('reviews').lean();
 
   if (!product) {
     throw new CustomError.NotFoundError(`No product found with ID: ${id}`);
