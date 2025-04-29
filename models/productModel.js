@@ -1,5 +1,5 @@
-const { required } = require('joi');
 const mongoose = require('mongoose');
+const Review = require(`./../models/reviewModel.js`);
 
 const productSchema = new mongoose.Schema(
   {
@@ -77,6 +77,10 @@ productSchema.virtual('reviews', {
   localField: '_id',
   foreignField: 'product',
   justOne: false,
+});
+
+productSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) await Review.deleteMany({ product: doc._id });
 });
 
 module.exports = mongoose.model('Product', productSchema);
