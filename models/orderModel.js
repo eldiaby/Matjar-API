@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // 🛒 Sub-schema for each cart item in the order
-const singleCartItemSchema = new mongoose.Schema({
+const singleOrderItemSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Product name must be provided.'],
@@ -52,7 +52,7 @@ const orderSchema = new mongoose.Schema(
       min: [0, 'Total must be a positive number.'],
     },
     orderItems: {
-      type: [singleCartItemSchema],
+      type: [singleOrderItemSchema],
       required: [true, 'At least one order item must be included.'],
       validate: {
         validator: (items) => items.length > 0,
