@@ -17,6 +17,7 @@ const authRouter = require('./routes/authRoutes.js'); // Auth routes
 const userRouter = require('./routes/userRoutes.js'); // User routes
 const productRouter = require('./routes/productRoutes.js'); // Product routes
 const reviewRouter = require('./routes/reviewRoutes.js'); // Reviews routes
+const orderRouter = require('./routes/orderRoutes.js'); // Orders routes
 
 /* ─────────────────────────────────────────────────────── */
 /* 🧱 Custom Middleware */
@@ -52,6 +53,7 @@ app.use('/api/v1/auth', authRouter); // Auth routes
 app.use('/api/v1/users', userRouter); // User routes
 app.use('/api/v1/products', productRouter); // Product routes
 app.use('/api/v1/reviews', reviewRouter); // Review routes
+app.use('/api/v1/orders', orderRouter); // Order routes
 
 /**
  * @desc    Test route for API root
