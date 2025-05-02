@@ -349,11 +349,11 @@
 
 #### Security Packages
 
-- [] express-rate-limiter
-- [] helmet
-- [] xss-clean
-- [] express-mongo-sanitize
-- [] cors (cookies!!!!)
+- [x] express-rate-limiter
+- [x] helmet
+- [x] xss-clean
+- [x] express-mongo-sanitize
+- [x] cors (cookies!!!!)
 
 #### Deploy on Heroku
 

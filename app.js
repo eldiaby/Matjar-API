@@ -8,6 +8,16 @@ const express = require('express'); // Express framework
 const morgan = require('morgan'); // HTTP request logger middleware
 const cookieParser = require('cookie-parser'); // Cookie parser middleware
 const fileUpload = require('express-fileupload'); // File upload middleware
+const ms = require('ms');
+
+/* ─────────────────────────────────────────────────────── */
+/* 📦 Securety Packages */
+/* ─────────────────────────────────────────────────────── */
+const rateLimiter = require('express-rate-limit');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const mongoSanitizer = require('express-mongo-sanitize');
+const cors = require('cors');
 
 /* ─────────────────────────────────────────────────────── */
 /* 🛠️  Custom Modules */
@@ -37,6 +47,25 @@ const port = process.env.PORT || 5000; // Set server port
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('tiny')); // Morgan logging for development environment
 }
+
+/* ─────────────────────────────────────────────────────── */
+/* 🧰 Securety Middleware */
+/* ─────────────────────────────────────────────────────── */
+app.set('trust proxy', 1);
+app.use(
+  rateLimiter({
+    windowMs: ms(`15m`),
+    max: 60,
+  })
+);
+app.use(helmet());
+app.use(cors());
+app.use((req, res, next) => {
+  req.query = { ...req.query };
+  next();
+});
+app.use(xss());
+// app.use(mongoSanitizer());
 
 /* ─────────────────────────────────────────────────────── */
 /* 🧰 Global Middleware */
