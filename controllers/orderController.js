@@ -12,6 +12,7 @@ const Product = require('./../models/productModel.js');
 
 // Custom Errors
 const CustomError = require('./../errors');
+const { checkPermissions } = require('../utils/ckeckPermissions.js');
 
 // local functions
 const fakeStripeAPI = async ({ amount, currency }) => {
@@ -22,13 +23,24 @@ const fakeStripeAPI = async ({ amount, currency }) => {
 
 // Exported functions
 module.exports.getAllOrders = asyncHandler(async (req, res, next) => {
-  res.send('This is get all orders route');
+  const orders = await Order.find({});
+
+  res.status(StatusCodes.OK).json({ length: orders.length, orders });
 });
+
 module.exports.getSingleOrder = asyncHandler(async (req, res, next) => {
-  res.send('This is get single order route');
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    throw new CustomError.NotFoundError(`No order found with ID: ${req.id}`);
+  }
+  checkPermissions(req.user, order.user);
+  res.status(StatusCodes.OK).json({ order });
 });
+
 module.exports.getCurrentUserOrders = asyncHandler(async (req, res, next) => {
-  res.send('This is get current user orders route');
+  const orders = await Order.find({ user: req.user.userId });
+
+  res.status(StatusCodes.OK).json({ length: orders.length, orders });
 });
 
 module.exports.createOrder = asyncHandler(async (req, res, next) => {
@@ -95,7 +107,6 @@ module.exports.createOrder = asyncHandler(async (req, res, next) => {
 
     product.inventory -= item.amount;
     await product.save();
-    console.log(product.inventory);
   }
 
   res
@@ -104,5 +115,18 @@ module.exports.createOrder = asyncHandler(async (req, res, next) => {
 });
 
 module.exports.updateOrder = asyncHandler(async (req, res, next) => {
-  res.send('This is update  order route');
+  const { id: orderId } = req.params;
+  const { paymentIntentId } = req.body;
+
+  const order = await Order.findOne({ _id: orderId });
+  if (!order) {
+    throw new CustomError.NotFoundError(`No order with id : ${orderId}`);
+  }
+  checkPermissions(req.user, order.user);
+
+  order.paymentIntentId = paymentIntentId;
+  order.status = 'paid';
+  await order.save();
+
+  res.status(StatusCodes.OK).json({ order });
 });

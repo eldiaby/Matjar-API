@@ -323,22 +323,22 @@
 
 #### Get All Orders and Get Single Order
 
-- [] getAllOrders - admin only
-- [] getSingleOrder - chechPermissions
+- [x] getAllOrders - admin only
+- [x] getSingleOrder - chechPermissions
 
 #### Get Current User Orders
 
-- [] find orders where user is equal to req.user.userId
+- [x] find orders where user is equal to req.user.userId
 
 #### Update Order
 
-- [] get order id
-- [] get paymentIntentId (req.body)
-- [] get order
-- [] if does not exist - 404
-- [] check permissions
-- [] set paymentIntentId and status as 'paid'
-- [] order.save()
+- [x] get order id
+- [x] get paymentIntentId (req.body)
+- [x] get order
+- [x] if does not exist - 404
+- [x] check permissions
+- [x] set paymentIntentId and status as 'paid'
+- [x] order.save()
 
 #### Create Docs
 
