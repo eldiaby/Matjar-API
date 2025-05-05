@@ -36,6 +36,7 @@ const userSchema = new mongoose.Schema(
       ],
       minlength: [6, 'Password must be at least 6 characters long.'],
       trim: true,
+      select: false,
     },
     passwordConfirm: {
       type: String,
@@ -54,6 +55,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['admin', 'user'],
       default: 'user',
+    },
+    verificationToken: {
+      type: String,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verifiedAt: {
+      type: Date,
     },
   },
   { timestamps: true }
