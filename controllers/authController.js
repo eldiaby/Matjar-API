@@ -94,6 +94,10 @@ module.exports.login = asyncHandler(async (req, res, next) => {
     throw new UnauthenticatedError('Invalid email or password.');
   }
 
+  if (!user.isVerified) {
+    throw new UnauthenticatedError(`Please virify your account!!`);
+  }
+
   // 🎫 Generate token payload
   const tokenUser = createTokenUser({ user });
 
