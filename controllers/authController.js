@@ -38,22 +38,30 @@ module.exports.register = asyncHandler(async (req, res, next) => {
     throw new BadRequestError('Email already exists');
   }
 
+  const verificationToken = 'Fake Token';
+
   // 🛠 Create new user
   const user = await User.create({
     name,
     email,
     password,
     passwordConfirm,
+    verificationToken,
   });
 
-  // 🎫 Generate token payload
-  const tokenUser = createTokenUser({ user });
+  res.status(StatusCodes.CREATED).json({
+    message: `Seccuse! Please verify your email account we have sent you an email`,
+    verificationToken: user.verificationToken,
+  });
 
-  // 🍪 Attach token as cookie
-  attachCookiesToResponse({ res, tokenUser });
+  // // 🎫 Generate token payload
+  // const tokenUser = createTokenUser({ user });
 
-  // ✅ Send response
-  res.status(StatusCodes.CREATED).json({ user: tokenUser });
+  // // 🍪 Attach token as cookie
+  // attachCookiesToResponse({ res, tokenUser });
+
+  // // ✅ Send response
+  // res.status(StatusCodes.CREATED).json({ user: tokenUser });
 });
 
 // ==========================
