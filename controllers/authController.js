@@ -2,6 +2,9 @@
 // IMPORTS & DEPENDENCIES
 // ==========================
 
+// Node packages
+const crypto = require('node:crypto');
+
 // Models
 const User = require('./../models/userModel.js');
 
@@ -38,7 +41,7 @@ module.exports.register = asyncHandler(async (req, res, next) => {
     throw new BadRequestError('Email already exists');
   }
 
-  const verificationToken = 'Fake Token';
+  const verificationToken = crypto.randomBytes(40).toString('hex');
 
   // 🛠 Create new user
   const user = await User.create({
@@ -50,7 +53,7 @@ module.exports.register = asyncHandler(async (req, res, next) => {
   });
 
   res.status(StatusCodes.CREATED).json({
-    message: `Seccuse! Please verify your email account we have sent you an email`,
+    message: `Success! Please check your email inbox. We've sent you a message with a verification link to activate your account`,
     verificationToken: user.verificationToken,
   });
 
