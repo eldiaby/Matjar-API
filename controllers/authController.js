@@ -15,6 +15,7 @@ const { StatusCodes } = require('http-status-codes');
 // Utilities
 const { attachCookiesToResponse } = require('./../utils/JWT.js');
 const { createTokenUser } = require('./../utils/createTokenUser.js');
+const sendVerificationEmail = require('./../utils/sendingEmails/sendVerificationEmail.js');
 
 // Custom Errors
 const {
@@ -57,11 +58,17 @@ module.exports.register = asyncHandler(async (req, res, next) => {
     verificationToken,
   });
 
+  await sendVerificationEmail({
+    name: user.name,
+    email: user.email,
+    verificationToken: user.verificationToken,
+    origin: `http://localhost:5000`,
+  });
+
   // 📤 Send verification response
   res.status(StatusCodes.CREATED).json({
     message:
       "Registration successful! Please check your inbox—we've sent you a verification email to activate your account.",
-    verificationToken: user.verificationToken, // Remove in production!
   });
 });
 
@@ -85,10 +92,8 @@ module.exports.verifyEmail = asyncHandler(async (req, res, next) => {
   }
 
   // ✅ Update user verification status
-  user.isVerified = true;
-  user.verifiedAt = Date.now();
-  user.verificationToken = undefined;
 
+  user.verification();
   await user.save();
 
   // 📤 Respond with success
