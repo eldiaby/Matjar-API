@@ -17,7 +17,11 @@ const { attachCookiesToResponse } = require('./../utils/JWT.js');
 const { createTokenUser } = require('./../utils/createTokenUser.js');
 
 // Custom Errors
-const { BadRequestError, UnauthenticatedError } = require('./../errors');
+const {
+  BadRequestError,
+  UnauthenticatedError,
+  NotFoundError,
+} = require('./../errors');
 
 // ==========================
 // @desc    Register a new user
@@ -31,16 +35,17 @@ module.exports.register = asyncHandler(async (req, res, next) => {
   // 🛑 Validate required fields
   if (!name || !email || !password || !passwordConfirm) {
     throw new BadRequestError(
-      'Please provide name, email, password, and password confirmation'
+      'Please provide name, email, password, and password confirmation.'
     );
   }
 
   // 🔍 Check if email already exists
   const emailExists = await User.findOne({ email });
   if (emailExists) {
-    throw new BadRequestError('Email already exists');
+    throw new BadRequestError('This email is already registered.');
   }
 
+  // 🔑 Generate verification token
   const verificationToken = crypto.randomBytes(40).toString('hex');
 
   // 🛠 Create new user
@@ -52,19 +57,45 @@ module.exports.register = asyncHandler(async (req, res, next) => {
     verificationToken,
   });
 
+  // 📤 Send verification response
   res.status(StatusCodes.CREATED).json({
-    message: `Success! Please check your email inbox. We've sent you a message with a verification link to activate your account`,
-    verificationToken: user.verificationToken,
+    message:
+      "Registration successful! Please check your inbox—we've sent you a verification email to activate your account.",
+    verificationToken: user.verificationToken, // Remove in production!
   });
+});
 
-  // // 🎫 Generate token payload
-  // const tokenUser = createTokenUser({ user });
+// ==========================
+// @desc    Verify user's email
+// @route   POST /api/v1/auth/verify-email
+// @access  Public
+// ==========================
+module.exports.verifyEmail = asyncHandler(async (req, res, next) => {
+  // 📥 Extract verification token and email
+  const { verificationToken, email } = req.body;
 
-  // // 🍪 Attach token as cookie
-  // attachCookiesToResponse({ res, tokenUser });
+  // 🔍 Find user by email
+  const user = await User.findOne({ email });
 
-  // // ✅ Send response
-  // res.status(StatusCodes.CREATED).json({ user: tokenUser });
+  // ⛔ User not found or invalid token
+  if (!user || user.verificationToken !== verificationToken) {
+    throw new NotFoundError(
+      'Verification failed. The token is invalid or has already been used.'
+    );
+  }
+
+  // ✅ Update user verification status
+  user.isVerified = true;
+  user.verifiedAt = Date.now();
+  user.verificationToken = undefined;
+
+  await user.save();
+
+  // 📤 Respond with success
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Your email has been successfully verified. You can now log in.',
+  });
 });
 
 // ==========================
@@ -84,21 +115,16 @@ module.exports.login = asyncHandler(async (req, res, next) => {
   // 🔍 Find user by email
   const user = await User.findOne({ email });
 
-  // ⛔ Email not found
-  if (!user) {
+  // ⛔ Invalid credentials
+  if (!user || !(await user.compareUserPassword(password))) {
     throw new UnauthenticatedError('Invalid email or password.');
   }
 
-  // 🔐 Compare passwords
-  const isPasswordCorrect = await user.compareUserPassword(password);
-
-  // ⛔ Password incorrect
-  if (!isPasswordCorrect) {
-    throw new UnauthenticatedError('Invalid email or password.');
-  }
-
+  // ⛔ Email not verified
   if (!user.isVerified) {
-    throw new UnauthenticatedError(`Please virify your account!!`);
+    throw new UnauthenticatedError(
+      'Access denied. Please verify your email to continue. Check your inbox for the verification link.'
+    );
   }
 
   // 🎫 Generate token payload
@@ -107,22 +133,27 @@ module.exports.login = asyncHandler(async (req, res, next) => {
   // 🍪 Attach token as cookie
   attachCookiesToResponse({ res, tokenUser });
 
-  // ✅ Send success response
-  res.status(StatusCodes.OK).json({ user: tokenUser });
+  // ✅ Send login success response
+  res.status(StatusCodes.OK).json({
+    user: tokenUser,
+    message: 'Login successful!',
+  });
 });
 
 // ==========================
 // @desc    Logout user
 // @route   GET /api/v1/auth/logout
-// @access  Private (can also be public for simple logout)
+// @access  Public or Private
 // ==========================
 module.exports.logout = asyncHandler(async (req, res, next) => {
-  // 🍪 Clear the cookie by expiring it
-  res.cookie('token', 'Logout', {
+  // 🍪 Clear the auth cookie
+  res.cookie('token', 'logout', {
     httpOnly: true,
-    expires: new Date(Date.now()), // expire immediately
+    expires: new Date(Date.now()),
   });
 
-  // ✅ Respond with success
-  res.status(StatusCodes.OK).json({ msg: 'User logged out successfully' });
+  // ✅ Send logout success response
+  res.status(StatusCodes.OK).json({
+    message: 'You have been logged out successfully.',
+  });
 });

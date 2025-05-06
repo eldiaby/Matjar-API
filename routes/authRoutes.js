@@ -19,28 +19,32 @@ const router = express.Router();
 // ==========================
 
 /**
-
-@desc Register a new user
-
-@route POST /api/v1/auth/register
-
-@access Public */ router.route('/register').post(authController.register);
-
-/**
-
-@desc Login user
-
-@route POST /api/v1/auth/login
-
-@access Public */ router.route('/login').post(authController.login);
+ * @desc    Register a new user
+ * @route   POST /api/v1/auth/register
+ * @access  Public
+ */
+router.post('/register', authController.register);
 
 /**
+ * @desc    Verify user's email
+ * @route   POST /api/v1/auth/verify-email
+ * @access  Public
+ */
+router.post('/verify-email', authController.verifyEmail);
 
-@desc Logout user
+/**
+ * @desc    Login user
+ * @route   POST /api/v1/auth/login
+ * @access  Public
+ */
+router.post('/login', authController.login);
 
-@route GET /api/v1/auth/logout
-
-@access Public */ router.route('/logout').get(authController.logout);
+/**
+ * @desc    Logout user
+ * @route   GET /api/v1/auth/logout
+ * @access  Public
+ */
+router.get('/logout', authController.logout);
 
 // ==========================
 // 📤 EXPORT ROUTER
