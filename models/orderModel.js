@@ -1,6 +1,15 @@
+// ==========================
+// 🧩 DEPENDENCIES
+// ==========================
 const mongoose = require('mongoose');
 
-// 🛒 Sub-schema for each cart item in the order
+// ==========================
+// 📦 SUB-SCHEMA: Order Item
+// ==========================
+
+/**
+ * @desc Schema for a single item in the order.
+ */
 const singleOrderItemSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -27,6 +36,13 @@ const singleOrderItemSchema = new mongoose.Schema({
   },
 });
 
+// ==========================
+// 🧾 MAIN SCHEMA: Order
+// ==========================
+
+/**
+ * @desc Schema for a customer order, including payment and user reference.
+ */
 const orderSchema = new mongoose.Schema(
   {
     tax: {
@@ -63,7 +79,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       trim: true,
       enum: {
-        values: ['pending', 'paid', 'failed', 'deliverd', 'canceled'],
+        values: ['pending', 'paid', 'failed', 'delivered', 'canceled'],
         message: 'Invalid order status: {VALUE}',
       },
       default: 'pending',
@@ -81,10 +97,13 @@ const orderSchema = new mongoose.Schema(
     paymentId: {
       type: String,
       trim: true,
-      // Optional: You can make it required later when payment is confirmed
+      // Optional: This can be filled after payment confirmation
     },
   },
   { timestamps: true }
 );
 
+// ==========================
+// 📤 EXPORT ORDER MODEL
+// ==========================
 module.exports = mongoose.model('Order', orderSchema);

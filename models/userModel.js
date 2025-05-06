@@ -1,7 +1,13 @@
+// ==========================
+// 🧩 DEPENDENCIES
+// ==========================
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
+// ==========================
+// 🧾 USER SCHEMA DEFINITION
+// ==========================
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -41,14 +47,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please confirm your password.'],
       validate: {
-        // Custom validator to check if password and passwordConfirm match
         validator: function () {
           return this.password === this.passwordConfirm;
         },
         message: 'Password confirmation does not match password.',
       },
       trim: true,
-      select: false, // Prevent this field from being returned in any query
+      select: false,
     },
     role: {
       type: String,
@@ -69,22 +74,51 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔐 Encrypt the password before saving the user document
+// ==========================
+// 🔐 SCHEMA HOOKS
+// ==========================
+
+/**
+ * @hook
+ * @desc Hashes the user's password before saving the document to the database.
+ * It only hashes the password if it's new or modified.
+ * Also removes `passwordConfirm` before saving.
+ */
 userSchema.pre('save', async function () {
-  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return;
 
-  // Remove passwordConfirm before saving to DB
   this.passwordConfirm = undefined;
 
-  // Generate salt and hash the password
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// 🔍 Method to compare entered password with the hashed password in DB
+// ==========================
+// 🧠 INSTANCE METHODS
+// ==========================
+
+/**
+ * @method compareUserPassword
+ * @desc Compares the entered password with the hashed password stored in the database.
+ * @param {string} candidatePassword - The password provided by the user during login.
+ * @returns {Promise<boolean>} - Returns true if passwords match, false otherwise.
+ */
 userSchema.methods.compareUserPassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
+/**
+ * @method verification
+ * @desc Marks the user as verified and sets the verification timestamp.
+ * Note: This method modifies the document but does NOT save it. You must call `.save()` after.
+ */
+userSchema.methods.verification = function () {
+  this.isVerified = true;
+  this.verifiedAt = Date.now();
+  this.verificationToken = undefined;
+};
+
+// ==========================
+// 📤 EXPORT USER MODEL
+// ==========================
 module.exports = mongoose.model('User', userSchema);

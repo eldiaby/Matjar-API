@@ -1,6 +1,12 @@
+// ==========================
+// 🧩 DEPENDENCIES
+// ==========================
 const mongoose = require('mongoose');
-const Review = require(`./../models/reviewModel.js`);
+const Review = require('./../models/reviewModel.js');
 
+// ==========================
+// 🧾 PRODUCT SCHEMA DEFINITION
+// ==========================
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -76,6 +82,15 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+// ==========================
+// 🔗 VIRTUAL POPULATE (Reviews)
+// ==========================
+
+/**
+ * @virtual reviews
+ * @desc Connects product to its reviews using virtual populate.
+ * This will not store data in DB, but allows access via `.populate('reviews')`.
+ */
 productSchema.virtual('reviews', {
   ref: 'Review',
   localField: '_id',
@@ -83,8 +98,24 @@ productSchema.virtual('reviews', {
   justOne: false,
 });
 
+// ==========================
+// 🪝 MONGOOSE HOOKS
+// ==========================
+
+/* -----------------------------------------
+ 🗑️ post('findOneAndDelete') Hook
+ - Deletes all reviews related to the deleted product.
+------------------------------------------ */
+
+/**
+ * @hook post-findOneAndDelete
+ * @desc Removes all reviews associated with a deleted product.
+ */
 productSchema.post('findOneAndDelete', async function (doc) {
   if (doc) await Review.deleteMany({ product: doc._id });
 });
 
+// ==========================
+// 📤 EXPORT PRODUCT MODEL
+// ==========================
 module.exports = mongoose.model('Product', productSchema);

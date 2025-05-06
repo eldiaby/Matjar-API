@@ -1,5 +1,11 @@
+// ==========================
+// 🧩 DEPENDENCIES
+// ==========================
 const mongoose = require('mongoose');
 
+// ==========================
+// 🧾 REVIEW SCHEMA DEFINITION
+// ==========================
 const reviewSchema = new mongoose.Schema(
   {
     rating: {
@@ -36,8 +42,21 @@ const reviewSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ==========================
+// 📌 UNIQUE INDEX
+// ==========================
+// Ensure a user can only leave one review per product
 reviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
+// ==========================
+// 🧠 STATIC METHODS
+// ==========================
+
+/**
+ * @method updateProductStats
+ * @desc Calculates and updates average rating and number of reviews for a product.
+ * @param {mongoose.Types.ObjectId} productId - The ID of the product to update.
+ */
 reviewSchema.statics.updateProductStats = async function (productId) {
   const Product = mongoose.model('Product');
 
@@ -65,25 +84,44 @@ reviewSchema.statics.updateProductStats = async function (productId) {
   }
 };
 
-// ✅ Post-save hook
+// ==========================
+// 🪝 MONGOOSE HOOKS
+// ==========================
+
+/* -----------------------------------------
+ 🔁 post('save') Hook
+ - Runs after saving a new review.
+ - Recalculates product's average rating.
+------------------------------------------ */
 reviewSchema.post('save', async function () {
   if (this.product) {
     await mongoose.model('Review').updateProductStats(this.product);
   }
 });
 
-// ✅ Post-delete hook
+/* -----------------------------------------
+ 🗑️ post('findOneAndDelete') Hook
+ - Runs after a review is deleted.
+ - Recalculates product's average rating.
+------------------------------------------ */
 reviewSchema.post('findOneAndDelete', async function (doc) {
   if (doc && doc.product) {
     await mongoose.model('Review').updateProductStats(doc.product);
   }
 });
 
-// ✅ Post-update hook
+/* -----------------------------------------
+ ✏️ post('findOneAndUpdate') Hook
+ - Runs after a review is updated.
+ - Recalculates product's average rating.
+------------------------------------------ */
 reviewSchema.post('findOneAndUpdate', async function (doc) {
   if (doc && doc.product) {
     await mongoose.model('Review').updateProductStats(doc.product);
   }
 });
 
+// ==========================
+// 📤 EXPORT REVIEW MODEL
+// ==========================
 module.exports = mongoose.model('Review', reviewSchema);
