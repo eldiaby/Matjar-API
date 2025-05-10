@@ -8,6 +8,11 @@ const express = require('express');
 // Controllers
 const authController = require('../controllers/authController.js');
 
+// Middleware
+const {
+  authenticateUser,
+} = require('../middleware/authenticationMiddleware.js');
+
 // ==========================
 // 🚏 ROUTER SETUP
 // ==========================
@@ -44,7 +49,7 @@ router.post('/login', authController.login);
  * @route   GET /api/v1/auth/logout
  * @access  Public
  */
-router.get('/logout', authController.logout);
+router.delete('/logout', authenticateUser, authController.logout);
 
 // ==========================
 // 📤 EXPORT ROUTER

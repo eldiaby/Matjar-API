@@ -170,7 +170,7 @@ module.exports.login = asyncHandler(async (req, res, next) => {
 
   const userToken = { refreshToken, userAgent, ip, user: user._id };
 
-  await Token.create(userToken).lean();
+  await Token.create(userToken);
 
   // 🍪 Attach token as cookie
   attachCookiesToResponse({ res, tokenUser, refreshToken });
@@ -188,14 +188,20 @@ module.exports.login = asyncHandler(async (req, res, next) => {
 // @access  Public or Private
 // ==========================
 module.exports.logout = asyncHandler(async (req, res, next) => {
+  await Token.findOneAndDelete({ user: req.user.userId });
+
   // 🍪 Clear the auth cookie
-  res.cookie('token', 'logout', {
+  res.cookie('accessToken', 'logout', {
+    httpOnly: true,
+    expires: new Date(Date.now()),
+  });
+  res.cookie('refreshToken', 'logout', {
     httpOnly: true,
     expires: new Date(Date.now()),
   });
 
   // ✅ Send logout success response
-  res.status(StatusCodes.OK).json({
+  res.status(StatusCodes.NO_CONTENT).json({
     message: 'You have been logged out successfully.',
   });
 });
