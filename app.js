@@ -60,11 +60,6 @@ app.use(
 );
 app.use(helmet());
 app.use(cors());
-app.use((req, res, next) => {
-  req.query = { ...req.query };
-  next();
-});
-app.use(xss());
 // app.use(mongoSanitizer());
 
 /* ─────────────────────────────────────────────────────── */

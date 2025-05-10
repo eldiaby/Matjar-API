@@ -7,6 +7,7 @@ const crypto = require('node:crypto');
 
 // Models
 const User = require('./../models/userModel.js');
+const Token = require('./../models/tokenModel.js');
 
 // Packages
 const asyncHandler = require('express-async-handler');
@@ -135,8 +136,44 @@ module.exports.login = asyncHandler(async (req, res, next) => {
   // 🎫 Generate token payload
   const tokenUser = createTokenUser({ user });
 
+  // Create refresh token
+  let refreshToken = ``;
+
+  // check for existing token
+
+  const existingToken = await Token.findOne({ user: user._id }).lean();
+
+  if (existingToken) {
+    const { isValid } = existingToken;
+
+    if (!isValid) {
+      throw new UnauthenticatedError('Invalid credentials.');
+    }
+
+    refreshToken = existingToken.refreshToken;
+
+    // 🍪 Attach token as cookie
+    attachCookiesToResponse({ res, tokenUser, refreshToken });
+
+    // ✅ Send login success response
+    res.status(StatusCodes.OK).json({
+      user: tokenUser,
+      message: 'Login successful!',
+    });
+
+    return;
+  }
+
+  refreshToken = crypto.randomBytes(40).toString('hex');
+  const userAgent = req.headers['user-agent'];
+  const ip = req.ip;
+
+  const userToken = { refreshToken, userAgent, ip, user: user._id };
+
+  await Token.create(userToken).lean();
+
   // 🍪 Attach token as cookie
-  attachCookiesToResponse({ res, tokenUser });
+  attachCookiesToResponse({ res, tokenUser, refreshToken });
 
   // ✅ Send login success response
   res.status(StatusCodes.OK).json({
