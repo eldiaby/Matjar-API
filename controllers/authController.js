@@ -12,11 +12,15 @@ const Token = require('./../models/tokenModel.js');
 // Packages
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
+const ms = require('ms');
 
 // Utilities
 const { attachCookiesToResponse } = require('./../utils/JWT.js');
 const { createTokenUser } = require('./../utils/createTokenUser.js');
 const sendVerificationEmail = require('./../utils/sendingEmails/sendVerificationEmail.js');
+const { createHash } = require('./../utils/createHash.js');
+
+const sendResetPasswordEmail = require('./../utils/sendingEmails/sendResetPasswordEmail.js');
 
 // Custom Errors
 const {
@@ -204,4 +208,92 @@ module.exports.logout = asyncHandler(async (req, res, next) => {
   res.status(StatusCodes.NO_CONTENT).json({
     message: 'You have been logged out successfully.',
   });
+});
+
+////////////////////////////////////////////////////////////////////
+// Forget password functionalities
+
+// ==========================
+// @desc    Send password reset link via email (if user exists)
+// @route   POST /api/v1/auth/forgot-password
+// @access  Public
+//
+// 🚨 Security Note:
+// Whether the email exists or not, always respond with a success message.
+// This prevents attackers from discovering which emails are registered (user enumeration).
+// ==========================
+module.exports.fotgetPassword = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+
+  // 🛑 Check for email
+  if (!email) {
+    throw new BadRequestError('Please provide a valid email address.');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (user) {
+    // 🔐 Generate raw reset token
+    const rawToken = crypto.randomBytes(70).toString('hex');
+    user.passwordToken = createHash(rawToken);
+
+    // ⏰ Set token expiration
+    user.passwordTokenExpirationDate = new Date(
+      Date.now() + ms(process.env.PASSWORD_RESET_TOKEN_EXPIRES_IN || '15m')
+    );
+
+    await sendResetPasswordEmail({
+      name: user.name,
+      email: user.email,
+      resetToken: rawToken,
+    });
+
+    await user.save();
+  }
+
+  // 📨 Always respond the same way to avoid user enumeration
+  res.status(StatusCodes.OK).json({
+    message: 'If the email is valid, you will receive a reset link shortly.',
+  });
+});
+
+// ==========================
+// @desc    Reset user password using valid reset token
+// @route   POST /api/v1/auth/reset-password
+// @access  Public
+//
+// 🚨 Security Note:
+// Do not reveal whether the token is invalid because of email or token mismatch.
+// Always respond with a generic error to protect against token probing or user discovery.
+// ==========================
+module.exports.resetPassword = asyncHandler(async (req, res, next) => {
+  const { email, token, password } = req.body;
+
+  // 🛑 Validate input
+  if (!email || !token || !password) {
+    throw new BadRequestError('Email, token, and new password are required.');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (user) {
+    const isTokenValid =
+      user.passwordToken === createHash(token) &&
+      user.passwordTokenExpirationDate > new Date();
+
+    if (isTokenValid) {
+      user.password = password;
+      user.passwordToken = undefined;
+      user.passwordTokenExpirationDate = undefined;
+
+      await user.save();
+
+      return res.status(StatusCodes.OK).json({
+        message:
+          'Your password has been reset successfully. You can now log in.',
+      });
+    }
+  }
+
+  throw new BadRequestError('Invalid or expired token.');
 });

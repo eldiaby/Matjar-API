@@ -10,7 +10,7 @@ const sendVerificationEmail = async ({
 
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6">
-      <h2>Welcome to Matjar, ${name} 👋</h2>
+      <h2>Welcome to Matjar, ${name}</h2>
       <p>Thank you for signing up! To activate your account, please verify your email by clicking the button below:</p>
       <a href="${verificationLink}" 
          style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px;">

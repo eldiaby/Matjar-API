@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport(nodemailerConfing);
  */
 const sendEmail = async ({ to, subject, html }) => {
   const info = await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+    from: process.env.EMAIL_FROM || `Matjar.com <no-reply@matjar.com>`,
     to,
     subject: subject || '📦 Message from Matjar.com',
     html: html || '<p>Thanks for contacting Matjar!</p>',

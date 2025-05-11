@@ -51,6 +51,9 @@ router.post('/login', authController.login);
  */
 router.delete('/logout', authenticateUser, authController.logout);
 
+router.post('/forget-password', authController.fotgetPassword);
+router.post('/reset-password', authController.resetPassword);
+
 // ==========================
 // 📤 EXPORT ROUTER
 // ==========================

@@ -70,6 +70,12 @@ const userSchema = new mongoose.Schema(
     verifiedAt: {
       type: Date,
     },
+    passwordToken: {
+      type: String,
+    },
+    passwordTokenExpirationDate: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
