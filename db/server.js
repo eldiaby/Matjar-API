@@ -4,52 +4,64 @@
 const mongoose = require('mongoose'); // Import mongoose for MongoDB connection
 
 // ==========================
-// DATABASE CONNECTION
+// GET MONGO URI HELPER
 // ==========================
-const uriFromEnv = process.env.ATLAS_DB_URI?.replace(
-  '<db_username>', // Replace <db_username> with your MongoDB Atlas username
-  process.env.ATLAS_DB_USERNAME // MongoDB Atlas username from env variables
-)
-  .replace('<db_password>', process.env.ATLAS_DB_PASSWORD) // Replace <db_password> with your password
-  .replace('<project_name>', process.env.ATLAS_DB_PROJECT); // Replace <project_name> with your MongoDB project name
+/**
+ * Builds and returns the correct MongoDB URI based on the environment.
+ * In development, it returns the local URI with the project name.
+ * In production, it returns the full Atlas URI with credentials and project.
+ *
+ * @returns {string} MongoDB connection string
+ */
+const getMongoUri = () => {
+  if (process.env.NODE_ENV === 'development') {
+    // Local MongoDB URI (with project name substitution)
+    return process.env.LOCAL_DB_URI?.replace(
+      '<project_name>',
+      process.env.ATLAS_DB_PROJECT
+    );
+  }
 
-// Local MongoDB URI configuration
-const localUri = process.env.LOCAL_DB_URI?.replace(
-  '<project_name>', // Replace <project_name> with your MongoDB project name in the local URI
-  process.env.ATLAS_DB_PROJECT // The actual project name from env variables
-);
+  // MongoDB Atlas URI (with credentials and project name)
+  return process.env.ATLAS_DB_URI?.replace(
+    '<db_username>',
+    process.env.ATLAS_DB_USERNAME
+  )
+    .replace('<db_password>', process.env.ATLAS_DB_PASSWORD)
+    .replace('<project_name>', process.env.ATLAS_DB_PROJECT);
+};
 
 // ==========================
 // CONNECT DATABASE FUNCTION
 // ==========================
 /**
- * Connects to MongoDB (either Atlas or local based on config).
- * @param {string} uri - The MongoDB connection URI
+ * Connects to MongoDB using Mongoose.
+ * Chooses between local and Atlas URIs based on NODE_ENV.
+ *
+ * @param {string} [uri] - Optional custom MongoDB URI (defaults to computed value)
+ * @returns {Promise<void>}
  */
-const connectDB = async (
-  uri = process.env.DB_CONNECTION === 'atlas' ? uriFromEnv : localUri
-) => {
+const connectDB = async (uri = getMongoUri()) => {
   try {
     if (!uri) throw new Error('❌ No valid MongoDB URI found.');
 
-    // Log which MongoDB source is being connected to (Atlas or Local)
+    // Log which MongoDB source is being used
     console.log(
       `Connecting to ${
         uri.includes('mongodb+srv') ? 'MongoDB Atlas' : 'Local MongoDB'
       }...`
     );
 
-    // Connect to the MongoDB database
+    // Connect to MongoDB
     await mongoose.connect(uri);
     console.log('Database connection established successfully!');
   } catch (error) {
-    // Log any connection errors
     console.error('Failed to connect to the database:', error.message);
-    throw error; // Rethrow the error to handle it in other parts of the app
+    throw error;
   }
 };
 
 // ==========================
 // EXPORT MODULE
 // ==========================
-module.exports = connectDB; // Export the connectDB function for use in other files
+module.exports = connectDB;
