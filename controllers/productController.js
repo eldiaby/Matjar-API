@@ -2,27 +2,26 @@
 // IMPORTS & DEPENDENCIES
 // ==========================
 
-// Node packages
 const path = require('node:path');
-
-// Packages
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
-
-// Models
-const Product = require('./../models/productModel.js');
-
-// Custom Errors
-const CustomError = require('./../errors');
+const Product = require('../models/productModel.js');
+const CustomError = require('../errors');
+const apiResponse = require('../utils/apiResponse.js');
 
 // ==========================
 // @desc    Get all products
 // @route   GET /api/v1/products
 // @access  Public
 // ==========================
-module.exports.getAllProducts = asyncHandler(async (req, res, next) => {
+module.exports.getAllProducts = asyncHandler(async (req, res) => {
   const products = await Product.find({}).lean();
-  res.status(StatusCodes.OK).json({ length: products.length, products });
+
+  apiResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: 'Products fetched successfully',
+    data: products,
+  });
 });
 
 // ==========================
@@ -30,7 +29,7 @@ module.exports.getAllProducts = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/products/:id
 // @access  Public
 // ==========================
-module.exports.getProduct = asyncHandler(async (req, res, next) => {
+module.exports.getProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
@@ -43,7 +42,11 @@ module.exports.getProduct = asyncHandler(async (req, res, next) => {
     throw new CustomError.NotFoundError(`No product found with ID: ${id}`);
   }
 
-  res.status(StatusCodes.OK).json({ product });
+  apiResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: 'Product fetched successfully',
+    data: product,
+  });
 });
 
 // ==========================
@@ -51,10 +54,14 @@ module.exports.getProduct = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/products
 // @access  Private (admin only)
 // ==========================
-module.exports.createProduct = asyncHandler(async (req, res, next) => {
+module.exports.createProduct = asyncHandler(async (req, res) => {
   const product = await Product.create({ ...req.body, user: req.user.userId });
 
-  res.status(StatusCodes.CREATED).json({ product });
+  apiResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    message: 'Product created successfully',
+    data: product,
+  });
 });
 
 // ==========================
@@ -62,7 +69,7 @@ module.exports.createProduct = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/products/:id
 // @access  Private (admin only)
 // ==========================
-module.exports.updateProduct = asyncHandler(async (req, res, next) => {
+module.exports.updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
@@ -78,7 +85,11 @@ module.exports.updateProduct = asyncHandler(async (req, res, next) => {
     throw new CustomError.NotFoundError(`No product found with ID: ${id}`);
   }
 
-  res.status(StatusCodes.OK).json({ product: updatedProduct });
+  apiResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: 'Product updated successfully',
+    data: updatedProduct,
+  });
 });
 
 // ==========================
@@ -86,7 +97,7 @@ module.exports.updateProduct = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/products/:id
 // @access  Private (admin only)
 // ==========================
-module.exports.deleteProduct = asyncHandler(async (req, res, next) => {
+module.exports.deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
@@ -101,9 +112,11 @@ module.exports.deleteProduct = asyncHandler(async (req, res, next) => {
 
   await Product.findByIdAndDelete(id);
 
-  res
-    .status(StatusCodes.NO_CONTENT)
-    .json({ msg: 'Product deleted successfully' });
+  apiResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: 'Product deleted successfully',
+    data: null,
+  });
 });
 
 // ==========================
@@ -111,33 +124,27 @@ module.exports.deleteProduct = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/products/uploadImage
 // @access  Private (admin only)
 // ==========================
-module.exports.uploadImage = asyncHandler(async (req, res, next) => {
-  // 📥 Ensure file exists
+module.exports.uploadImage = asyncHandler(async (req, res) => {
   const image = req.files?.image;
   if (!image) {
     throw new CustomError.BadRequestError('Please upload an image file');
   }
 
-  // 🧪 Validate file type
   if (!image.mimetype.startsWith('image/')) {
     throw new CustomError.BadRequestError('Only image files are allowed');
   }
 
-  // 📏 Validate file size (max 1MB)
   const maxSize = 1 * 1024 * 1024;
   if (image.size > maxSize) {
     throw new CustomError.BadRequestError('Image must be less than 1MB');
   }
 
-  // 🛣️ Build image path
   const imagePath = path.join(__dirname, '..', 'public', 'uploads', image.name);
-
-  // 💾 Move the file to the uploads folder
   await image.mv(imagePath);
 
-  // ✅ Send response with uploaded image URL
-  res.status(StatusCodes.CREATED).json({
-    msg: 'Image uploaded successfully',
-    image: `/uploads/${image.name}`,
+  apiResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    message: 'Image uploaded successfully',
+    data: { image: `/uploads/${image.name}` },
   });
 });
